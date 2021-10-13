@@ -1,0 +1,14 @@
+{
+	"name": "ddo-audit-bot",
+	"version": "1.2.0",
+	"description": "DDO Audit Bot pulls data from DDO Audit's public API",
+	"main": "bot.js",
+	"author": "Clemeit",
+	"dependencies": {
+		"discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+		"discord.js": "^12.4.1",
+		"node-fetch": "^2.6.1",
+		"node-rest-client": "^3.1.0",
+		"winston": "^3.3.3"
+	}
+}
