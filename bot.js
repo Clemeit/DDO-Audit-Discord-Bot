@@ -22,9 +22,9 @@ client.on("message", (message) => {
 		case "lfms":
 			if (args.length == 0) {
 				message.reply(
-					"Which server do you want to check groups? Example: !" +
+					"Which server do you want to check groups for? Example: `!" +
 						command +
-						" Thelanis"
+						" Thelanis`"
 				);
 				return;
 			}
@@ -42,7 +42,6 @@ client.on("message", (message) => {
 	}
 });
 
-// TODO: this just returns ""
 function fixServerName(input) {
 	switch (input.toLowerCase()) {
 		case "a":
@@ -50,33 +49,52 @@ function fixServerName(input) {
 		case "argonesen":
 		case "argonnesen":
 		case "argonessen":
+		case "argonnessen":
 			return "argonnessen";
 		case "c":
 		case "canith":
+		case "cannith":
 			return "cannith";
 		case "g":
 		case "ghalanda":
+		case "ghallanda":
 			return "ghallanda";
 		case "k":
+		case "khyber":
 			return "khyber";
 		case "o":
+		case "orien":
 			return "orien";
 		case "s":
+		case "sarlona":
 			return "sarlona";
 		case "t":
+		case "thelanis":
 			return "thelanis";
 		case "w":
+		case "wayfinder":
 			return "wayfinder";
 		case "h":
 		case "hcl":
+		case "hardcore":
 			return "hardcore";
 	}
-	return input;
+	return "";
 }
 
 async function postGroups(message, serverName) {
+	console.log(
+		`'${message.author.username}' requested 'groups' for '${
+			serverName || "unknown server"
+		}' at '${message.createdAt}'`
+	);
+
+	if (serverName === "") {
+		message.reply(`I don't recognize that server.`);
+		return;
+	}
+
 	var groups = [];
-	var found = false;
 
 	try {
 		const { Groups } = await fetch(
@@ -84,8 +102,9 @@ async function postGroups(message, serverName) {
 		).then((response) => response.json());
 		Groups.forEach(function (group) {
 			if (group.Quest == null) group.Quest = { Name: "" };
-			groups.push(group);
+			if (group.Leader.Name !== "DDO Audit") groups.push(group);
 		});
+
 		if (groups.length == 0) {
 			message.channel.send(
 				"There are current no groups on " +
@@ -95,26 +114,6 @@ async function postGroups(message, serverName) {
 			);
 			return;
 		}
-		var nameLength = 0;
-		var questLength = 0;
-		var commentLength = 8;
-		var maxCommentLength = 30;
-		groups.forEach(function (group) {
-			if (group.Leader.Name.length > nameLength)
-				nameLength = group.Leader.Name.length;
-			if (group.Quest.Name.length > questLength)
-				questLength = group.Quest.Name.length;
-			if (group.Comment.length > commentLength)
-				commentLength = group.Comment.length;
-		});
-		if (commentLength > maxCommentLength) commentLength = maxCommentLength;
-		message.channel.send(
-			`There ${groups.length == 1 ? "is" : "are"} currently ${
-				groups.length
-			} group${groups.length == 1 ? "" : "s"} on ${
-				serverName.charAt(0).toUpperCase() + serverName.slice(1)
-			}:`
-		);
 
 		const serverStatusEmbed = new MessageEmbed()
 			.setColor("#00ff99")
@@ -123,7 +122,7 @@ async function postGroups(message, serverName) {
 					serverName.charAt(0).toUpperCase() + serverName.slice(1)
 				}`
 			)
-			.setURL("https://www.playeraudit.com/grouping")
+			.setURL(`https://www.playeraudit.com/grouping?s=${serverName}`)
 			.setAuthor(
 				"DDO Audit",
 				"https://playeraudit.com/favicon-32x32.png",
@@ -136,21 +135,34 @@ async function postGroups(message, serverName) {
 		groups.forEach((g) => {
 			serverStatusEmbed.addFields({
 				name: g.Leader.Name || " ",
-				value: `${g.Quest.Name ? "\n*" + g.Quest.Name + "*\n" : ""}${
-					g.Comment ? '"' + g.Comment + '"' : "No comment"
+				value: `${g.Quest.Name ? "\n ~ " + g.Quest.Name + "\n" : ""}${
+					g.Comment ? '*"' + g.Comment.trim() + '"*' : "No comment"
 				}`,
 			});
 		});
+
+		message.channel.send(
+			`There ${groups.length == 1 ? "is" : "are"} currently ${
+				groups.length
+			} group${groups.length == 1 ? "" : "s"} on ${
+				serverName.charAt(0).toUpperCase() + serverName.slice(1)
+			}:`
+		);
 
 		message.channel.send(serverStatusEmbed);
 	} catch (error) {
 		message.reply(
 			"Having trouble looking that up right now. Please try again later."
 		);
+		console.log(error);
 	}
 }
 
 async function postServerStatus(message) {
+	console.log(
+		`'${message.author.username}' requested 'server status' at '${message.createdAt}'`
+	);
+
 	try {
 		const { Worlds } = await fetch(
 			"https://playeraudit.com/api/serverstatus"
@@ -217,6 +229,7 @@ async function postServerStatus(message) {
 
 		message.channel.send(serverStatusEmbed);
 	} catch (error) {
+		console.log(error);
 		message.reply(
 			"Having trouble looking that up right now. Please try again later."
 		);
@@ -224,6 +237,9 @@ async function postServerStatus(message) {
 }
 
 async function postPopulation(message) {
+	console.log(
+		`'${message.author.username}' requested 'population' at '${message.createdAt}'`
+	);
 	try {
 		const {
 			Argonnessen,
@@ -235,7 +251,7 @@ async function postPopulation(message) {
 			Thelanis,
 			Wayfinder,
 			Hardcore,
-		} = await fetch("https://www.playeraudit.com/api/population").then(
+		} = await fetch("https://www.playeraudit.com/api/playersoverview").then(
 			(response) => response.json()
 		);
 
@@ -263,6 +279,10 @@ async function postPopulation(message) {
 			)
 			.setTimestamp()
 			.setFooter("Data provided by DDO Audit");
+
+		message.channel.send(
+			`You can check server population trends on <https://www.playeraudit.com>`
+		);
 
 		message.channel.send(serverStatusEmbed);
 	} catch (error) {
