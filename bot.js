@@ -85,9 +85,11 @@ async function postGroups(message, serverName) {
 	let servername = fixServerName(serverName);
 
 	console.log(
-		`'${message.author.username}' requested 'groups' for '${
-			servername || serverName
-		}' at '${message.createdAt}'`
+		`'${message.guild}->${message.channel.name}': '${
+			message.author.username
+		}' requested 'groups' for '${servername || serverName}' at '${
+			message.createdAt
+		}'`
 	);
 
 	if (servername === "") {
@@ -163,7 +165,7 @@ async function postGroups(message, serverName) {
 
 async function postServerStatus(message) {
 	console.log(
-		`'${message.author.username}' requested 'server status' at '${message.createdAt}'`
+		`'${message.guild}->${message.channel.name}': '${message.author.username}' requested 'server status' at '${message.createdAt}'`
 	);
 
 	try {
@@ -241,7 +243,7 @@ async function postServerStatus(message) {
 
 async function postPopulation(message) {
 	console.log(
-		`'${message.author.username}' requested 'population' at '${message.createdAt}'`
+		`'${message.guild}->${message.channel.name}': '${message.author.username}' requested 'population' at '${message.createdAt}'`
 	);
 	try {
 		const {
