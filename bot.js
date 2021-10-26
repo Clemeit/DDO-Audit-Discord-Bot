@@ -289,7 +289,7 @@ async function postPopulation(message) {
 	} catch (error) {
 		console.log(error);
 		message.reply(
-			"We're having trouble looking that up right now :( Try again later."
+			"We're having trouble looking that up right now. Please try again later."
 		);
 	}
 }
