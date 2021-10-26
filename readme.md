@@ -30,7 +30,7 @@ Result: A list of all public groups currently posted on the specified server.
 
 # Adding This Bot
 
-If you would like to add DDO Audit to a server on which you have the **Manager Server** permission, you may do so by clicking the following link:
+If you would like to add DDO Audit to a server on which you have the **Manage Server** permission, you may do so by clicking the following link:
 
 https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=83968&scope=bot
 
