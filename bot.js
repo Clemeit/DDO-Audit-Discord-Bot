@@ -123,6 +123,7 @@ async function postGroups(message, serverName) {
 			if (group.Leader.Name !== "DDO Audit") groups.push(group);
 		});
 
+		groups.reverse();
 		if (groups.length == 0) {
 			message.channel.send(
 				"There are currently no groups on " +
@@ -153,10 +154,10 @@ async function postGroups(message, serverName) {
 		groups.forEach((g, i) => {
 			if (i < 25) {
 				serverGroupsEmbed.addFields({
-					name: g.Leader.Name || " ",
-					value: `${g.Quest.Name ? "🗺️ " + g.Quest.Name : ""}${
-						g.Comment ? '\n💬 "' + g.Comment.trim() + '"' : ""
-					}${
+					name: g.Leader.Name || "Anonymous",
+					value: `🎚️ Levels ${g.MinimumLevel}-${g.MaximumLevel}${
+						g.Quest && g.Quest.Name ? "\n🗺️ " + g.Quest.Name : ""
+					}${g.Comment ? '\n💬 "' + g.Comment.trim() + '"' : ""}${
 						g.Members.length > 0
 							? "\n👥 " + (g.Members.length + 1).toString() + " members"
 							: ""
