@@ -7,6 +7,18 @@ const { performance } = require("perf_hooks");
 
 var API = require("node-rest-client").Client;
 
+const SERVERS = [
+	"Argonnessen",
+	"Cannith",
+	"Ghallanda",
+	"Khyber",
+	"Orien",
+	"Sarlona",
+	"Thelanis",
+	"Wayfinder",
+	"Hardcore",
+];
+
 client.on("ready", () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	client.user.setActivity("Dungeons & Dragons Online");
@@ -186,15 +198,19 @@ async function postServerStatus(message) {
 		let offlineservers = [];
 		let unknownservers = [];
 
-		Worlds.forEach((world) => {
-			if (world.Status === 1) {
-				onlineservers.push(world.Name);
-			} else if (world.Status === 0) {
-				offlineservers.push(world.Name);
-			} else {
-				unknownservers.push(world.Name);
-			}
-		});
+		if (Worlds == null || Worlds.length === 0) {
+			offlineservers.push([...SERVERS]);
+		} else {
+			Worlds.forEach((world) => {
+				if (world.Status === 1) {
+					onlineservers.push(world.Name);
+				} else if (world.Status === 0) {
+					offlineservers.push(world.Name);
+				} else {
+					unknownservers.push(world.Name);
+				}
+			});
+		}
 
 		const serverStatusEmbed = new MessageEmbed()
 			.setColor("#00ff99")
@@ -250,7 +266,7 @@ async function postServerStatus(message) {
 async function postPopulation(message) {
 	let startTime = performance.now();
 	console.log(
-		`'${message.guild}->${message.channel.name}': '${message.author.username}' requested 'population' at '${message.createdAt}'`
+		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'population' at '${message.createdAt}'`
 	);
 	try {
 		const {
