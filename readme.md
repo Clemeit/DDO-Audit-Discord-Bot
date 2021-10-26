@@ -38,9 +38,11 @@ https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permission
 
 DDO Audit requires the following permissions:
 
--  Send Messages
--  Embed Links
--  Read Message History
+-  Send Messages (allows DDO Audit to post messages to your server in response to commands)
+-  Embed Links (allows DDO Audit to embed link previews in its messages)
+-  Read Message History (allows DDO Audit to read messages posted to you server; required for recognizing `!` commands)
+
+DDO Audit does not store private user data or message history. The source code is available for your viewing.
 
 # About
 
