@@ -9,6 +9,7 @@ DDO Audit uses the `!` prefix.
 Try `!serverstatus`
 
 Result: Online/Offline status for DDO's servers.
+
 ![Server Status](./img/ddo-audit-discord-serverstatus.png)
 
 ## For Server Population
@@ -16,6 +17,7 @@ Result: Online/Offline status for DDO's servers.
 Try `!serverpop`
 
 Result: Current population for each of DDO's servers.
+
 ![Server Population](./img/ddo-audit-discord-serverpop.png)
 
 ## For Groups
@@ -23,6 +25,7 @@ Result: Current population for each of DDO's servers.
 Try `!groups servername` (e.g. `!groups thelanis`)
 
 Result: A list of all public groups currently posted on the specified server.
+
 ![Server Groups](./img/ddo-audit-discord-groups.png)
 
 # Adding This Bot
@@ -43,4 +46,6 @@ DDO Audit requires the following permissions:
 
 The DDO Audit Discord bot is an extension of DDO Audit. DDO Audit is in no way affiliated with or endorsed by Standing Stone Games or Daybreak Game Company. Visit the full project at www.playeraudit.com.
 
-Brought to you by Clemeit of Thelanis.
+The DDO Audit Discord bot is open source. You're welcome to take a look around!
+
+\- Clemeit of Thelanis
