@@ -3,6 +3,7 @@ const { MessageEmbed } = require("discord.js");
 const { prefix, token } = require("./config.json");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
+const { performance } = require("perf_hooks");
 
 var API = require("node-rest-client").Client;
 
@@ -55,13 +56,17 @@ function fixServerName(input) {
 		case "cannith":
 			return "cannith";
 		case "g":
+		case "galanda":
+		case "gallanda":
 		case "ghalanda":
 		case "ghallanda":
 			return "ghallanda";
 		case "k":
+		case "kyber":
 		case "khyber":
 			return "khyber";
 		case "o":
+		case "orion":
 		case "orien":
 			return "orien";
 		case "s":
@@ -71,6 +76,7 @@ function fixServerName(input) {
 		case "thelanis":
 			return "thelanis";
 		case "w":
+		case "wayfarer":
 		case "wayfinder":
 			return "wayfinder";
 		case "h":
@@ -82,14 +88,11 @@ function fixServerName(input) {
 }
 
 async function postGroups(message, serverName) {
+	let startTime = performance.now();
 	let servername = fixServerName(serverName);
 
 	console.log(
-		`'${message.guild}->${message.channel.name}': '${
-			message.author.username
-		}' requested 'groups' for '${servername || serverName}' at '${
-			message.createdAt
-		}'`
+		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'groups' for '${servername} ("${serverName}")' at '${message.createdAt}'`
 	);
 
 	if (servername === "") {
@@ -118,7 +121,7 @@ async function postGroups(message, serverName) {
 			return;
 		}
 
-		const serverStatusEmbed = new MessageEmbed()
+		const serverGroupsEmbed = new MessageEmbed()
 			.setColor("#00ff99")
 			.setTitle(
 				`LFMs on ${
@@ -137,7 +140,7 @@ async function postGroups(message, serverName) {
 
 		groups.forEach((g, i) => {
 			if (i < 25) {
-				serverStatusEmbed.addFields({
+				serverGroupsEmbed.addFields({
 					name: g.Leader.Name || " ",
 					value: `${g.Quest.Name ? "\n ~ " + g.Quest.Name + "\n" : ""}${
 						g.Comment ? '*"' + g.Comment.trim() + '"*' : "No comment"
@@ -154,9 +157,14 @@ async function postGroups(message, serverName) {
 			}:`
 		);
 
-		message.channel.send(serverStatusEmbed);
+		message.channel.send(serverGroupsEmbed);
+
+		let endTime = performance.now();
+		console.log(
+			` -> Served ${groups.length} group(s); took ${endTime - startTime} ms`
+		);
 	} catch (error) {
-		console.log(error);
+		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
 			"We're having trouble looking that up right now. Please try again later."
 		);
@@ -164,8 +172,9 @@ async function postGroups(message, serverName) {
 }
 
 async function postServerStatus(message) {
+	let startTime = performance.now();
 	console.log(
-		`'${message.guild}->${message.channel.name}': '${message.author.username}' requested 'server status' at '${message.createdAt}'`
+		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'server status' at '${message.createdAt}'`
 	);
 
 	try {
@@ -173,35 +182,19 @@ async function postServerStatus(message) {
 			"https://playeraudit.com/api/serverstatus"
 		).then((response) => response.json());
 
-		let onlinestring = "";
-		let offlinestring = "";
-		let unknownstring = "";
+		let onlineservers = [];
+		let offlineservers = [];
+		let unknownservers = [];
 
 		Worlds.forEach((world) => {
 			if (world.Status === 1) {
-				onlinestring += world.Name + ", ";
+				onlineservers.push(world.Name);
 			} else if (world.Status === 0) {
-				offlinestring += world.Name + ", ";
+				offlineservers.push(world.Name);
 			} else {
-				unknownstring += world.Name + ", ";
+				unknownservers.push(world.Name);
 			}
 		});
-
-		if (onlinestring) {
-			onlinestring = onlinestring.substring(0, onlinestring.length - 2);
-		} else {
-			onlinestring = "~";
-		}
-
-		if (offlinestring) {
-			offlinestring = offlinestring.substring(0, offlinestring.length - 2);
-		} else {
-			offlinestring = "~";
-		}
-
-		if (unknownstring) {
-			unknownstring = unknownstring.substring(0, unknownstring.length - 2);
-		}
 
 		const serverStatusEmbed = new MessageEmbed()
 			.setColor("#00ff99")
@@ -215,26 +208,39 @@ async function postServerStatus(message) {
 			.setThumbnail("https://playeraudit.com/favicon-32x32.png")
 			.addFields(
 				{
-					name: "ONLINE",
-					value: onlinestring,
+					name: "✅ ONLINE",
+					value: onlineservers.join(", "),
 					inline: false,
 				},
-				{ name: "OFFLINE", value: offlinestring, inline: false }
+				{
+					name: "❌ OFFLINE",
+					value: offlineservers.join(", "),
+					inline: false,
+				}
 			)
 			.setTimestamp()
 			.setFooter("Data provided by DDO Audit");
 
-		if (unknownstring) {
+		if (unknownservers.length) {
 			serverStatusEmbed.addFields({
-				name: "UNKNOWN",
-				value: unknownstring,
+				name: "❔ UNKNOWN",
+				value: unknownservers.join(", "),
 				inline: false,
 			});
 		}
 
 		message.channel.send(serverStatusEmbed);
+
+		let endTime = performance.now();
+		console.log(
+			` -> Served ${onlineservers.length} online, ${
+				offlineservers.length
+			} offline, ${unknownservers.length} unknown; took ${
+				endTime - startTime
+			} ms`
+		);
 	} catch (error) {
-		console.log(error);
+		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
 			"We're having trouble looking that up right now. Please try again later."
 		);
@@ -242,6 +248,7 @@ async function postServerStatus(message) {
 }
 
 async function postPopulation(message) {
+	let startTime = performance.now();
 	console.log(
 		`'${message.guild}->${message.channel.name}': '${message.author.username}' requested 'population' at '${message.createdAt}'`
 	);
@@ -260,6 +267,17 @@ async function postPopulation(message) {
 			(response) => response.json()
 		);
 
+		let totalpopulation =
+			Argonnessen +
+			Cannith +
+			Ghallanda +
+			Khyber +
+			Orien +
+			Sarlona +
+			Thelanis +
+			Wayfinder +
+			Hardcore;
+
 		const serverStatusEmbed = new MessageEmbed()
 			.setColor("#00ff99")
 			.setTitle("Server Population")
@@ -269,7 +287,7 @@ async function postPopulation(message) {
 				"https://playeraudit.com/favicon-32x32.png",
 				"https://www.playeraudit.com/"
 			)
-			.setDescription("Current server populations")
+			.setDescription(`There are ${totalpopulation} players online:`)
 			.setThumbnail("https://playeraudit.com/favicon-32x32.png")
 			.addFields(
 				{ name: "Argonnessen", value: Argonnessen, inline: true },
@@ -290,8 +308,15 @@ async function postPopulation(message) {
 		);
 
 		message.channel.send(serverStatusEmbed);
+
+		let endTime = performance.now();
+		console.log(
+			` -> Served ${totalpopulation} total population; took ${
+				endTime - startTime
+			} ms`
+		);
 	} catch (error) {
-		console.log(error);
+		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
 			"We're having trouble looking that up right now. Please try again later."
 		);
