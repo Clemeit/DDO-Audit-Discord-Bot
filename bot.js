@@ -133,13 +133,15 @@ async function postGroups(message, serverName) {
 			.setTimestamp()
 			.setFooter("Data provided by DDO Audit");
 
-		groups.forEach((g) => {
-			serverStatusEmbed.addFields({
-				name: g.Leader.Name || " ",
-				value: `${g.Quest.Name ? "\n ~ " + g.Quest.Name + "\n" : ""}${
-					g.Comment ? '*"' + g.Comment.trim() + '"*' : "No comment"
-				}`,
-			});
+		groups.forEach((g, i) => {
+			if (i < 25) {
+				serverStatusEmbed.addFields({
+					name: g.Leader.Name || " ",
+					value: `${g.Quest.Name ? "\n ~ " + g.Quest.Name + "\n" : ""}${
+						g.Comment ? '*"' + g.Comment.trim() + '"*' : "No comment"
+					}`,
+				});
+			}
 		});
 
 		message.channel.send(
