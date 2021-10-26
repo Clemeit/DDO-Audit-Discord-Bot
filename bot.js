@@ -29,7 +29,6 @@ client.on("message", (message) => {
 				return;
 			}
 			var serverName = args.shift().toLowerCase();
-			serverName = fixServerName(serverName);
 			postGroups(message, serverName);
 			break;
 		case "serverpop":
@@ -83,13 +82,15 @@ function fixServerName(input) {
 }
 
 async function postGroups(message, serverName) {
+	let servername = fixServerName(serverName);
+
 	console.log(
 		`'${message.author.username}' requested 'groups' for '${
-			serverName || "unknown server"
+			servername || serverName
 		}' at '${message.createdAt}'`
 	);
 
-	if (serverName === "") {
+	if (servername === "") {
 		message.reply(`I don't recognize that server.`);
 		return;
 	}
@@ -98,7 +99,7 @@ async function postGroups(message, serverName) {
 
 	try {
 		const { Groups } = await fetch(
-			`https://www.playeraudit.com/api/groups?s=${serverName}`
+			`https://www.playeraudit.com/api/groups?s=${servername}`
 		).then((response) => response.json());
 		Groups.forEach(function (group) {
 			if (group.Quest == null) group.Quest = { Name: "" };
@@ -107,9 +108,9 @@ async function postGroups(message, serverName) {
 
 		if (groups.length == 0) {
 			message.channel.send(
-				"There are current no groups on " +
-					serverName.charAt(0).toUpperCase() +
-					serverName.slice(1) +
+				"There are currently no groups on " +
+					servername.charAt(0).toUpperCase() +
+					servername.slice(1) +
 					"."
 			);
 			return;
@@ -119,10 +120,10 @@ async function postGroups(message, serverName) {
 			.setColor("#00ff99")
 			.setTitle(
 				`LFMs on ${
-					serverName.charAt(0).toUpperCase() + serverName.slice(1)
+					servername.charAt(0).toUpperCase() + servername.slice(1)
 				}`
 			)
-			.setURL(`https://www.playeraudit.com/grouping?s=${serverName}`)
+			.setURL(`https://www.playeraudit.com/grouping?s=${servername}`)
 			.setAuthor(
 				"DDO Audit",
 				"https://playeraudit.com/favicon-32x32.png",
@@ -145,16 +146,16 @@ async function postGroups(message, serverName) {
 			`There ${groups.length == 1 ? "is" : "are"} currently ${
 				groups.length
 			} group${groups.length == 1 ? "" : "s"} on ${
-				serverName.charAt(0).toUpperCase() + serverName.slice(1)
+				servername.charAt(0).toUpperCase() + servername.slice(1)
 			}:`
 		);
 
 		message.channel.send(serverStatusEmbed);
 	} catch (error) {
-		message.reply(
-			"Having trouble looking that up right now. Please try again later."
-		);
 		console.log(error);
+		message.reply(
+			"We're having trouble looking that up right now. Please try again later."
+		);
 	}
 }
 
@@ -231,7 +232,7 @@ async function postServerStatus(message) {
 	} catch (error) {
 		console.log(error);
 		message.reply(
-			"Having trouble looking that up right now. Please try again later."
+			"We're having trouble looking that up right now. Please try again later."
 		);
 	}
 }
@@ -286,8 +287,9 @@ async function postPopulation(message) {
 
 		message.channel.send(serverStatusEmbed);
 	} catch (error) {
+		console.log(error);
 		message.reply(
-			"Having trouble looking that up right now :( Try again later."
+			"We're having trouble looking that up right now :( Try again later."
 		);
 	}
 }
