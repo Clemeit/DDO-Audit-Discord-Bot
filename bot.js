@@ -199,7 +199,7 @@ async function postServerStatus(message) {
 		let unknownservers = [];
 
 		if (Worlds == null || Worlds.length === 0) {
-			offlineservers.push([...SERVERS]);
+			offlineservers.push(...SERVERS);
 		} else {
 			Worlds.forEach((world) => {
 				if (world.Status === 1) {
