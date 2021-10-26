@@ -154,8 +154,19 @@ async function postGroups(message, serverName) {
 			if (i < 25) {
 				serverGroupsEmbed.addFields({
 					name: g.Leader.Name || " ",
-					value: `${g.Quest.Name ? "\n ~ " + g.Quest.Name + "\n" : ""}${
-						g.Comment ? '*"' + g.Comment.trim() + '"*' : "No comment"
+					value: `${g.Quest.Name ? "🗺️ " + g.Quest.Name : ""}${
+						g.Comment ? '\n💬 "' + g.Comment.trim() + '"' : ""
+					}${
+						g.Members.length > 0
+							? "\n👥 " + (g.Members.length + 1).toString() + " members"
+							: ""
+					}${
+						g.AdventureActive
+							? "\n🕑 Active: " +
+							  g.AdventureActive.toString() +
+							  " minute" +
+							  (g.AdventureActive !== 1 ? "s" : "")
+							: ""
 					}`,
 				});
 			}
