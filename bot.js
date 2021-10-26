@@ -293,6 +293,17 @@ async function postPopulation(message) {
 		} = await fetch("https://www.playeraudit.com/api/playersoverview").then(
 			(response) => response.json()
 		);
+		const { Worlds } = await fetch(
+			"https://playeraudit.com/api/serverstatus"
+		).then((response) => response.json());
+		let defaultserver = "";
+		if (Worlds != null && Worlds.length > 0) {
+			Worlds.forEach((world) => {
+				if (world.Order === 0) {
+					defaultserver = world.Name;
+				}
+			});
+		}
 
 		let totalpopulation =
 			Argonnessen +
@@ -317,15 +328,53 @@ async function postPopulation(message) {
 			.setDescription(`There are ${totalpopulation} players online:`)
 			.setThumbnail("https://playeraudit.com/favicon-32x32.png")
 			.addFields(
-				{ name: "Argonnessen", value: Argonnessen, inline: true },
-				{ name: "Cannith", value: Cannith, inline: true },
-				{ name: "Ghallanda", value: Ghallanda, inline: true },
-				{ name: "Khyber", value: Khyber, inline: true },
-				{ name: "Orien", value: Orien, inline: true },
-				{ name: "Sarlona", value: Sarlona, inline: true },
-				{ name: "Thelanis", value: Thelanis, inline: true },
-				{ name: "Wayfinder", value: Wayfinder, inline: true },
-				{ name: "Hardcore", value: Hardcore, inline: true }
+				{
+					name: `${
+						defaultserver === "Argonnessen" ? "⭐" : ""
+					} Argonnessen`,
+					value: Argonnessen,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Cannith" ? "⭐" : ""} Cannith`,
+					value: Cannith,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Ghallanda" ? "⭐" : ""} Ghallanda`,
+					value: Ghallanda,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Khyber" ? "⭐" : ""} Khyber`,
+					value: Khyber,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Orien" ? "⭐" : ""} Orien`,
+					value: Orien,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Sarlona" ? "⭐" : ""} Sarlona`,
+					value: Sarlona,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Thelanis" ? "⭐" : ""} Thelanis`,
+					value: Thelanis,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Wayfinder" ? "⭐" : ""} Wayfinder`,
+					value: Wayfinder,
+					inline: true,
+				},
+				{
+					name: `${defaultserver === "Hardcore" ? "⭐" : ""} Hardcore`,
+					value: Hardcore,
+					inline: true,
+				}
 			)
 			.setTimestamp()
 			.setFooter("Data provided by DDO Audit");
@@ -335,6 +384,8 @@ async function postPopulation(message) {
 		);
 
 		message.channel.send(serverStatusEmbed);
+
+		message.channel.send("⭐ = default");
 
 		let endTime = performance.now();
 		console.log(
