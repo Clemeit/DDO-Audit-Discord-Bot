@@ -115,21 +115,33 @@ async function postGroups(message, serverName) {
 	var groups = [];
 
 	try {
+		let serverdownmessage = "";
+
 		const { Groups } = await fetch(
 			`https://www.playeraudit.com/api/groups?s=${servername}`
 		).then((response) => response.json());
 		Groups.forEach(function (group) {
 			if (group.Quest == null) group.Quest = { Name: "" };
-			if (group.Leader.Name !== "DDO Audit") groups.push(group);
+			if (group.Leader.Name === "DDO Audit") {
+				serverdownmessage = group.Comment;
+			} else {
+				groups.push(group);
+			}
 		});
 
 		groups.reverse();
 		if (groups.length == 0) {
-			message.channel.send(
+			let msg =
 				"There are currently no groups on " +
-					servername.charAt(0).toUpperCase() +
-					servername.slice(1) +
-					"."
+				servername.charAt(0).toUpperCase() +
+				servername.slice(1) +
+				"." +
+				(serverdownmessage ? "\n*Message: " + serverdownmessage + "*" : "");
+			message.channel.send(msg);
+
+			let endTime = performance.now();
+			console.log(
+				` -> Served message: '${msg}'; took ${endTime - startTime} ms`
 			);
 			return;
 		}
@@ -154,7 +166,7 @@ async function postGroups(message, serverName) {
 		groups.forEach((g, i) => {
 			if (i < 25) {
 				serverGroupsEmbed.addFields({
-					name: g.Leader.Name || "Anonymous",
+					name: `__${g.Leader.Name}__` || "Anonymous",
 					value: `🎚️ Levels ${g.MinimumLevel}-${g.MaximumLevel}${
 						g.Quest && g.Quest.Name ? "\n🗺️ " + g.Quest.Name : ""
 					}${g.Comment ? '\n💬 "' + g.Comment.trim() + '"' : ""}${
