@@ -237,12 +237,12 @@ async function postServerStatus(message) {
 			.addFields(
 				{
 					name: "✅ ONLINE",
-					value: onlineservers.join(", "),
+					value: onlineservers.join(", ") || "-",
 					inline: false,
 				},
 				{
 					name: "❌ OFFLINE",
-					value: offlineservers.join(", "),
+					value: offlineservers.join(", ") || "-",
 					inline: false,
 				}
 			)
@@ -252,7 +252,7 @@ async function postServerStatus(message) {
 		if (unknownservers.length) {
 			serverStatusEmbed.addFields({
 				name: "❔ UNKNOWN",
-				value: unknownservers.join(", "),
+				value: unknownservers.join(", ") || "-",
 				inline: false,
 			});
 		}
