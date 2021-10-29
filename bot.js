@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const { MessageEmbed } = require("discord.js");
 const { prefix, token } = require("./config.json");
+const Verbose = require("./verbose");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
 const { performance } = require("perf_hooks");
@@ -25,6 +26,7 @@ client.on("ready", () => {
 });
 
 client.on("message", (message) => {
+	Verbose.onError(message);
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
