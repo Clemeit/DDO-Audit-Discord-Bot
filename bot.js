@@ -197,6 +197,7 @@ async function postGroups(message, serverName) {
 
 		message.channel.send(serverGroupsEmbed);
 
+		Verbose.followup(message, 2);
 		let endTime = performance.now();
 		console.log(
 			` -> Served ${groups.length} group(s); took ${endTime - startTime} ms`
@@ -273,6 +274,7 @@ async function postServerStatus(message) {
 
 		message.channel.send(serverStatusEmbed);
 
+		Verbose.followup(message, 0.5);
 		let endTime = performance.now();
 		console.log(
 			` -> Served ${onlineservers.length} online, ${
@@ -402,6 +404,7 @@ async function postPopulation(message) {
 
 		message.channel.send("⭐ = default");
 
+		Verbose.followup(message, 0.25);
 		let endTime = performance.now();
 		console.log(
 			` -> Served ${totalpopulation} total population; took ${
