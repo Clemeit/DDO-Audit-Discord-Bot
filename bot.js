@@ -105,6 +105,38 @@ async function postGroups(message, serverName) {
 	let startTime = performance.now();
 	let servername = fixServerName(serverName);
 
+	let lowerlevel = 0;
+	let upperlevel = 30;
+
+	const args = message.content.slice(prefix.length).trim().split(/ +/);
+	const command = args.shift().toLowerCase();
+	const server = args.shift().toLowerCase();
+	const level = args.shift();
+	if (level != null) {
+		try {
+			const {
+				groups: { low, high },
+			} = /(?<low>\d+)(-(?<high>\d+))?/.exec(level);
+			if (lowerlevel != null) lowerlevel = low;
+			if (upperlevel != null) upperlevel = high;
+		} catch (error) {}
+	}
+
+	if (upperlevel < lowerlevel) {
+		let temp = lowerlevel;
+		lowerlevel = upperlevel;
+		upperlevel = temp;
+	}
+
+	let levelrangemessage = "";
+	if (lowerlevel !== 0) {
+		if (upperlevel == null) {
+			levelrangemessage = ` **at level ${lowerlevel}**`;
+		} else {
+			levelrangemessage = ` **for levels ${lowerlevel}-${upperlevel}**`;
+		}
+	}
+
 	console.log(
 		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'groups' for '${servername} ("${serverName}")' at '${message.createdAt}'`
 	);
@@ -127,7 +159,21 @@ async function postGroups(message, serverName) {
 			if (group.Leader.Name === "DDO Audit") {
 				serverdownmessage = group.Comment;
 			} else {
-				groups.push(group);
+				if (upperlevel !== undefined) {
+					if (
+						(group.MinimumLevel <= upperlevel &&
+							group.MinimumLevel >= lowerlevel) ||
+						(group.MaximumLevel <= upperlevel &&
+							group.MaximumLevel >= lowerlevel)
+					)
+						groups.push(group);
+				} else {
+					if (
+						lowerlevel >= group.MinimumLevel &&
+						lowerlevel <= group.MaximumLevel
+					)
+						groups.push(group);
+				}
 			}
 		});
 
@@ -137,6 +183,7 @@ async function postGroups(message, serverName) {
 				"There are currently no groups on " +
 				servername.charAt(0).toUpperCase() +
 				servername.slice(1) +
+				levelrangemessage +
 				"." +
 				(serverdownmessage ? "\n*Message: " + serverdownmessage + "*" : "");
 			message.channel.send(msg);
@@ -192,7 +239,7 @@ async function postGroups(message, serverName) {
 				groups.length
 			} group${groups.length == 1 ? "" : "s"} on ${
 				servername.charAt(0).toUpperCase() + servername.slice(1)
-			}:`
+			}${levelrangemessage}:`
 		);
 
 		message.channel.send(serverGroupsEmbed);
