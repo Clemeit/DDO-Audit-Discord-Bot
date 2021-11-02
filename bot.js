@@ -205,7 +205,9 @@ async function postGroups(message, serverName) {
 				}
 				break;
 			case "name":
-				additionalmessage = ` **with leader${
+				additionalmessage = ` **with ${
+					groups.length === 1 ? "a" : ""
+				} leader${
 					groups.length === 1 ? "" : "s"
 				} matching the name "${namefilter}"**`;
 				break;
@@ -269,12 +271,22 @@ async function postGroups(message, serverName) {
 			}
 		});
 
+		let alsotrymessage = "";
+		let rnd = Math.floor(Math.random() * 10);
+		if (rnd === 0) {
+			alsotrymessage = `\n(you may also specify a level like \`${message.content} 17\`)`;
+		} else if (rnd === 1) {
+			alsotrymessage = `\n(you may also specify a level range like \`${message.content} 17-20\`)`;
+		} else if (rnd === 2) {
+			alsotrymessage = `\n(you may also specify a leader's name like \`${message.content} clemeit\`)`;
+		}
+
 		message.channel.send(
 			`There ${groups.length == 1 ? "is" : "are"} currently ${
 				groups.length
 			} group${groups.length == 1 ? "" : "s"} on ${
 				servername.charAt(0).toUpperCase() + servername.slice(1)
-			}${additionalmessage}:`
+			}${additionalmessage || alsotrymessage}:`
 		);
 
 		message.channel.send(serverGroupsEmbed);
