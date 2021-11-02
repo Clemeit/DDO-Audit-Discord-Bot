@@ -105,36 +105,39 @@ async function postGroups(message, serverName) {
 	let startTime = performance.now();
 	let servername = fixServerName(serverName);
 
-	let lowerlevel = 0;
-	let upperlevel = 30;
+	let lowerlevel = undefined;
+	let upperlevel = undefined;
+	let namefilter = "";
+	let searchtype = "none";
+
+	let levelregex = /(?<low>\d+)(-(?<high>\d+))?/;
+	let nameregex = /(?<name>[\w-]+)/;
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const command = args.shift().toLowerCase();
 	const server = args.shift().toLowerCase();
-	const level = args.shift();
-	if (level != null) {
-		try {
+	const filter = args.shift();
+	if (filter != null) {
+		if (levelregex.test(filter)) {
+			searchtype = "level";
 			const {
 				groups: { low, high },
-			} = /(?<low>\d+)(-(?<high>\d+))?/.exec(level);
-			if (lowerlevel != null) lowerlevel = low;
-			if (upperlevel != null) upperlevel = high;
-		} catch (error) {}
+			} = levelregex.exec(filter);
+			if (low != null) lowerlevel = low;
+			if (high != null) upperlevel = high;
+		} else if (nameregex.test(filter)) {
+			searchtype = "name";
+			const {
+				groups: { name },
+			} = nameregex.exec(filter);
+			namefilter = name;
+		}
 	}
 
 	if (upperlevel < lowerlevel) {
 		let temp = lowerlevel;
 		lowerlevel = upperlevel;
 		upperlevel = temp;
-	}
-
-	let levelrangemessage = "";
-	if (lowerlevel !== 0) {
-		if (upperlevel == null) {
-			levelrangemessage = ` **at level ${lowerlevel}**`;
-		} else {
-			levelrangemessage = ` **for levels ${lowerlevel}-${upperlevel}**`;
-		}
 	}
 
 	console.log(
@@ -159,23 +162,55 @@ async function postGroups(message, serverName) {
 			if (group.Leader.Name === "DDO Audit") {
 				serverdownmessage = group.Comment;
 			} else {
-				if (upperlevel !== undefined) {
-					if (
-						(group.MinimumLevel <= upperlevel &&
-							group.MinimumLevel >= lowerlevel) ||
-						(group.MaximumLevel <= upperlevel &&
-							group.MaximumLevel >= lowerlevel)
-					)
-						groups.push(group);
-				} else {
-					if (
-						lowerlevel >= group.MinimumLevel &&
-						lowerlevel <= group.MaximumLevel
-					)
+				switch (searchtype) {
+					case "level":
+						if (upperlevel !== undefined) {
+							if (
+								(group.MinimumLevel <= upperlevel &&
+									group.MinimumLevel >= lowerlevel) ||
+								(group.MaximumLevel <= upperlevel &&
+									group.MaximumLevel >= lowerlevel)
+							)
+								groups.push(group);
+						} else {
+							if (
+								lowerlevel >= group.MinimumLevel &&
+								lowerlevel <= group.MaximumLevel
+							)
+								groups.push(group);
+						}
+						break;
+					case "name":
+						if (
+							group.Leader.Name.toLowerCase().includes(
+								namefilter.toLowerCase()
+							)
+						) {
+							groups.push(group);
+						}
+						break;
+					default:
 						groups.push(group);
 				}
 			}
 		});
+
+		let additionalmessage = "";
+		switch (searchtype) {
+			case "level":
+				if (upperlevel == null) {
+					additionalmessage = ` **at level ${lowerlevel}**`;
+				} else {
+					additionalmessage = ` **for levels ${lowerlevel}-${upperlevel}**`;
+				}
+				break;
+			case "name":
+				additionalmessage = ` **with leader${
+					groups.length === 1 ? "" : "s"
+				} matching the name "${namefilter}"**`;
+				break;
+			default:
+		}
 
 		groups.reverse();
 		if (groups.length == 0) {
@@ -183,7 +218,7 @@ async function postGroups(message, serverName) {
 				"There are currently no groups on " +
 				servername.charAt(0).toUpperCase() +
 				servername.slice(1) +
-				levelrangemessage +
+				additionalmessage +
 				"." +
 				(serverdownmessage ? "\n*Message: " + serverdownmessage + "*" : "");
 			message.channel.send(msg);
@@ -239,7 +274,7 @@ async function postGroups(message, serverName) {
 				groups.length
 			} group${groups.length == 1 ? "" : "s"} on ${
 				servername.charAt(0).toUpperCase() + servername.slice(1)
-			}${levelrangemessage}:`
+			}${additionalmessage}:`
 		);
 
 		message.channel.send(serverGroupsEmbed);

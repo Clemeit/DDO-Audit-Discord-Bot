@@ -22,15 +22,16 @@ Result: Current population for each of DDO's servers.
 
 ## For Groups
 
-Try `!groups servername [level or range]` (e.g. `!groups thelanis` or `!groups thelanis 20` or `!groups thelanis 15-19`)
+Try `!groups servername [level|level-range|leader_name]` (e.g. `!groups thelanis` or `!groups thelanis 15-19` or `!groups thelanis clemeit`)
 
-Result: A list of all public groups currently posted on the specified server and, if provided, within the level range.
+Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter.
 
-Notes on the [level or range] parameter:
+Notes on the filter parameter:
 
--  This field is optional. Leave out the level range to see all groups.
+-  This field is optional.
 -  Provide a single level (e.g. `20`) to see all groups that are accepting that character level.
 -  Provide a level range (e.g. `15-19`) to see all groups within that range.
+-  Provide a full or partial character name (e.g. `clemeit`) to see groups with leaders matching that name.
 
 ![Server Groups](./img/ddo-audit-discord-groups.png)
 
