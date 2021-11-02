@@ -214,9 +214,19 @@ async function postGroups(message, serverName) {
 			default:
 		}
 
+		let servicemessage = "";
+		if (
+			serverdownmessage ===
+			"The server appears to be online, but we've lost connection. We'll be back soon."
+		) {
+			servicemessage =
+				"*Group data takes at least 5 minutes to update after a restart*\n";
+		}
+
 		groups.reverse();
 		if (groups.length == 0) {
 			let msg =
+				servicemessage +
 				"There are currently no groups on " +
 				servername.charAt(0).toUpperCase() +
 				servername.slice(1) +
@@ -490,8 +500,24 @@ async function postPopulation(message) {
 			.setTimestamp()
 			.setFooter("Data provided by DDO Audit");
 
+		let servicemessage = "";
+		if (
+			!Argonnessen ||
+			!Cannith ||
+			!Ghallanda ||
+			!Khyber ||
+			!Orien ||
+			!Sarlona ||
+			!Thelanis ||
+			!Wayfinder
+		) {
+			// At least 1 server is down
+			servicemessage =
+				"*Population data takes at least 5 minutes to update after a restart*\n";
+		}
+
 		message.channel.send(
-			`You can check server population trends on <https://www.playeraudit.com>`
+			`${servicemessage}You can check server population trends on <https://www.playeraudit.com>`
 		);
 
 		message.channel.send(serverStatusEmbed);
