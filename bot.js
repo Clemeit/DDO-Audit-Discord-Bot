@@ -27,6 +27,7 @@ client.on("ready", () => {
 
 client.on("message", (message) => {
 	Verbose.onError(message);
+	Verbose.handleUserReply(message);
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
@@ -309,7 +310,7 @@ async function postGroups(message, serverName) {
 	} catch (error) {
 		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
-			"We're having trouble looking that up right now. Please try again later."
+			"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
 		);
 	}
 }
@@ -390,7 +391,7 @@ async function postServerStatus(message) {
 	} catch (error) {
 		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
-			"We're having trouble looking that up right now. Please try again later."
+			"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
 		);
 	}
 }
@@ -534,7 +535,7 @@ async function postPopulation(message) {
 	} catch (error) {
 		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
-			"We're having trouble looking that up right now. Please try again later."
+			"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
 		);
 	}
 }
