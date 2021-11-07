@@ -1,8 +1,31 @@
 # Usage
 
-The DDO Audit Discord bot provides server status, server population, and groups/LFMs for Dungeons & Dragons Online by utilizing APIs from the website of the same name.
+The DDO Audit Discord bot provides server status, server population, and groups/LFMs for Dungeons & Dragons Online by utilizing APIs from the website of the same name. [Click here](https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=83968&scope=bot) to add the bot to your server.
 
-DDO Audit uses the `!` prefix.
+Note: DDO Audit uses the `!` prefix.
+
+## For Groups
+
+Try `!groups servername [level|level-range|leader_name]` (e.g. `!groups thelanis` or `!groups thelanis 15-19` or `!groups thelanis clemeit`)
+
+Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter.
+
+Notes on the filter parameter:
+
+-  This field is optional.
+-  Provide a single level (e.g. `20`) to see all groups that are accepting that character level.
+-  Provide a level range (e.g. `15-19`) to see all groups within that range.
+-  Provide a full or partial character name (e.g. `clemeit`) to see groups with leaders matching that name.
+
+![Server Groups](./img/ddo-audit-discord-groups.png)
+
+To see a screenshot of the LFM panel, try `!view servername`
+
+Result: A full screenshot of the in-game LFM panel.
+
+Note: Append "large" to the end of the command (e.g. `!view thelanis large`) to increase the font size in the screenshot.
+
+![Server Panel](./img/ddo-audit-discord-panel.png)
 
 ## For Server Status
 
@@ -20,21 +43,6 @@ Result: Current population for each of DDO's servers.
 
 ![Server Population](./img/ddo-audit-discord-serverpop.png)
 
-## For Groups
-
-Try `!groups servername [level|level-range|leader_name]` (e.g. `!groups thelanis` or `!groups thelanis 15-19` or `!groups thelanis clemeit`)
-
-Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter.
-
-Notes on the filter parameter:
-
--  This field is optional.
--  Provide a single level (e.g. `20`) to see all groups that are accepting that character level.
--  Provide a level range (e.g. `15-19`) to see all groups within that range.
--  Provide a full or partial character name (e.g. `clemeit`) to see groups with leaders matching that name.
-
-![Server Groups](./img/ddo-audit-discord-groups.png)
-
 # Adding This Bot
 
 If you would like to add DDO Audit to a server on which you have the **Manage Server** permission, you may do so by clicking the following link:
@@ -48,8 +56,6 @@ DDO Audit requires the following permissions:
 -  Send Messages (allows DDO Audit to post messages to your server in response to commands)
 -  Embed Links (allows DDO Audit to embed link previews in its messages)
 -  Read Message History (allows DDO Audit to read messages posted to you server; required for recognizing `!` commands)
-
-DDO Audit does not store private user data or message history. The source code is available for your viewing.
 
 # About
 
