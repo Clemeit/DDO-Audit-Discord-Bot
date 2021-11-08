@@ -738,16 +738,19 @@ async function postGroups(message, serverName) {
 	let lowerlevel = undefined;
 	let upperlevel = undefined;
 	let namefilter = "";
+	let difficultyfilter = "";
 	let searchtype = "none";
 
 	let levelregex = /(?<low>\d+)(-(?<high>\d+))?/;
 	let nameregex = /(?<name>[\w-]+)/;
+	const difficulties = ["casual", "normal", "hard", "elite", "reaper"];
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const command = args.shift().toLowerCase();
 	const server = args.shift().toLowerCase();
-	const filter = args.shift();
-	if (filter != null) {
+	let filter = args.shift();
+	if (filter != null && filter.length > 0) {
+		filter = filter.toLowerCase();
 		if (levelregex.test(filter)) {
 			searchtype = "level";
 			const {
@@ -755,6 +758,9 @@ async function postGroups(message, serverName) {
 			} = levelregex.exec(filter);
 			if (low != null) lowerlevel = low;
 			if (high != null) upperlevel = high;
+		} else if (difficulties.includes(filter)) {
+			searchtype = "difficulty";
+			difficultyfilter = filter;
 		} else if (nameregex.test(filter)) {
 			searchtype = "name";
 			const {
@@ -819,6 +825,11 @@ async function postGroups(message, serverName) {
 							groups.push(group);
 						}
 						break;
+					case "difficulty":
+						if (group.Difficulty.toLowerCase() === difficultyfilter) {
+							groups.push(group);
+						}
+						break;
 					default:
 						groups.push(group);
 				}
@@ -840,6 +851,9 @@ async function postGroups(message, serverName) {
 				} leader${
 					groups.length === 1 ? "" : "s"
 				} matching the name "${namefilter}"**`;
+				break;
+			case "difficulty":
+				additionalmessage = ` **running ${difficultyfilter} difficulty**`;
 				break;
 			default:
 		}
