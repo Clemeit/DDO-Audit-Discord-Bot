@@ -269,7 +269,7 @@ async function postGroups(message, serverName) {
 			alsotrymessage = `\n(you may also specify a level like \`${message.content} 17\`)`;
 		} else if (rnd === 1) {
 			alsotrymessage = `\n(you may also specify a level range like \`${message.content} 17-20\`)`;
-		} else if (rnd === 2 || rnd === 3) {
+		} else if ((rnd === 2 || rnd === 3) && command !== "view") {
 			alsotrymessage = `\n(you can view a screenshot of the LFM panel with \`!view servername\`)`;
 		}
 
