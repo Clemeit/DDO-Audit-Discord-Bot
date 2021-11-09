@@ -117,6 +117,7 @@ async function postGroups(message, serverName) {
 	let namefilter = "";
 	let difficultyfilter = "";
 	let searchtype = "none";
+	let large = false;
 
 	let levelregex = /(?<low>\d+)(-(?<high>\d+))?/;
 	let nameregex = /(?<name>[\w-]+)/;
@@ -138,6 +139,9 @@ async function postGroups(message, serverName) {
 		} else if (difficulties.includes(filter)) {
 			searchtype = "difficulty";
 			difficultyfilter = filter;
+		} else if (filter === "large") {
+			searchtype = "none";
+			large = true;
 		} else if (nameregex.test(filter)) {
 			searchtype = "name";
 			const {
@@ -284,7 +288,7 @@ async function postGroups(message, serverName) {
 		if (command === "lfms" || command === "groups") {
 			sendGroupsAsList(message, groups, servername);
 		} else if (command === "view") {
-			Render.sendGroupsAsPanel(message, groups, servername);
+			Render.sendGroupsAsPanel(message, groups, large);
 		}
 
 		Verbose.followup(message, 2);

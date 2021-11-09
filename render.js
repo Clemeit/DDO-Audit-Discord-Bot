@@ -2,12 +2,12 @@ const { MessageAttachment } = require("discord.js");
 const Canvas = require("canvas");
 const lfmSprites = Canvas.loadImage("./img/lfm-sprite.jpg");
 
-async function sendGroupsAsPanel(message, groups, servername) {
+async function sendGroupsAsPanel(message, groups, large) {
 	const lfmSprites = await Canvas.loadImage("./img/lfm-sprite.jpg");
 	const panelWidth = 848;
 	const lfmHeight = 90;
 	const classCount = 15;
-	let fontModifier = 0;
+	let fontModifier = large ? 3 : 0;
 
 	let canvas = Canvas.createCanvas(
 		panelWidth,
