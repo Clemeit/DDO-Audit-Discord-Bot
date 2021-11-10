@@ -8,7 +8,7 @@ Note: DDO Audit uses the `!` prefix.
 
 Try `!groups servername [level|level-range|leader_name]` (e.g. `!groups thelanis` or `!groups thelanis 15-19` or `!groups thelanis clemeit`)
 
-Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter.
+Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter. The response will be deleted automatically after 5 minutes. You may append "save" to the end of the message to stop the message from being deleted (e.g. `!groups thelanis save`).
 
 Notes on the filter parameter:
 
@@ -21,7 +21,7 @@ Notes on the filter parameter:
 
 To see a screenshot of the LFM panel, try `!view servername`
 
-Result: A full screenshot of the in-game LFM panel.
+Result: A full screenshot of the in-game LFM panel. The response will be deleted automatically after 5 minutes. You may append "save" to the end of the message to stop the message from being deleted (e.g. `!view thelanis save`).
 
 Note: Append "large" to the end of the command (e.g. `!view thelanis large`) to increase the font size in the screenshot.
 
