@@ -263,17 +263,7 @@ async function sendGroupsAsPanel(message, groups, large) {
 
 	const attachment = new MessageAttachment(canvas.toBuffer(), "ddo-lfm.png");
 
-	message.channel
-		.send({ files: [attachment] })
-		.then(() => {})
-		.catch((err) => {
-			if (err.code == 50013) {
-				console.log(` -> Failed with insufficient permissions; took  ms`);
-				message.reply(
-					"I don't have permission to send images in this channel."
-				);
-			}
-		});
+	return message.channel.send({ files: [attachment] });
 
 	function DrawFiller() {
 		for (let i = 0; i < (groups ? Math.max(groups.length, 4) : 4); i++) {

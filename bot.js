@@ -7,10 +7,6 @@ const client = new Discord.Client();
 const fetch = require("node-fetch");
 const { performance } = require("perf_hooks");
 
-const { MessageAttachment } = require("discord.js");
-const Canvas = require("canvas");
-const lfmSprites = Canvas.loadImage("./img/lfm-sprite.jpg");
-
 var API = require("node-rest-client").Client;
 
 const SERVERS = [
@@ -119,11 +115,21 @@ async function postGroups(message, serverName) {
 	let searchtype = "none";
 	let large = false;
 
+	let shouldSave = message.content.toLowerCase().endsWith("save");
+
 	let levelregex = /(?<low>\d+)(-(?<high>\d+))?/;
 	let nameregex = /(?<name>[\w-]+)/;
 	const difficulties = ["casual", "normal", "hard", "elite", "reaper"];
 
-	const args = message.content.slice(prefix.length).trim().split(/ +/);
+	const args = message.content
+		.slice(prefix.length)
+		.trim()
+		.slice(
+			0,
+			shouldSave ? message.content.length - 5 : message.content.length - 1
+		)
+		.trim()
+		.split(/ +/);
 	const command = args.shift().toLowerCase();
 	const server = args.shift().toLowerCase();
 	let filter = args.shift();
@@ -269,29 +275,49 @@ async function postGroups(message, serverName) {
 
 		let alsotrymessage = "";
 		let rnd = Math.floor(Math.random() * 10);
-		if (rnd === 0) {
-			alsotrymessage = `\n(you may also specify a level like \`${message.content} 17\`)`;
-		} else if (rnd === 1) {
-			alsotrymessage = `\n(you may also specify a level range like \`${message.content} 17-20\`)`;
-		} else if ((rnd === 2 || rnd === 3) && command !== "view") {
-			alsotrymessage = `\n(you can view a screenshot of the LFM panel with \`!view servername\`)`;
+		if (!shouldSave) {
+			if (rnd === 0) {
+				alsotrymessage = `\n(you may also specify a level like \`${message.content} 17\`)`;
+			} else if (rnd === 1) {
+				alsotrymessage = `\n(you may also specify a level range like \`${message.content} 17-20\`)`;
+			} else if ((rnd === 2 || rnd === 3) && command !== "view") {
+				alsotrymessage = `\n(you can view a screenshot of the LFM panel with \`!view servername\`)`;
+			}
 		}
 
-		message.channel.send(
-			`There ${groups.length == 1 ? "is" : "are"} currently ${
-				groups.length
-			} group${groups.length == 1 ? "" : "s"} on ${
-				servername.charAt(0).toUpperCase() + servername.slice(1)
-			}${additionalmessage || alsotrymessage}:`
-		);
+		message.channel
+			.send(
+				`There ${groups.length == 1 ? "is" : "are"} currently ${
+					groups.length
+				} group${groups.length == 1 ? "" : "s"} on ${
+					servername.charAt(0).toUpperCase() + servername.slice(1)
+				}${additionalmessage || alsotrymessage}:`
+			)
+			.then((msg) => {
+				if (!shouldSave) {
+					msg.delete({ timeout: 1000 * 60 * 5 });
+				}
+			});
 
 		if (command === "lfms" || command === "groups") {
-			sendGroupsAsList(message, groups, servername);
+			await sendGroupsAsList(message, groups, servername).then((msg) => {
+				if (!shouldSave) {
+					msg.delete({ timeout: 1000 * 60 * 5 });
+				}
+			});
 		} else if (command === "view") {
-			Render.sendGroupsAsPanel(message, groups, large);
+			await Render.sendGroupsAsPanel(message, groups, large).then((msg) => {
+				if (!shouldSave) {
+					msg.delete({ timeout: 1000 * 60 * 5 });
+				}
+			});
 		}
 
-		Verbose.followup(message, 2);
+		await Verbose.followup(message, 2, shouldSave).then((msg) => {
+			if (!shouldSave) {
+				msg.delete({ timeout: 1000 * 60 * 5 });
+			}
+		});
 		let endTime = performance.now();
 		console.log(
 			` -> Served ${groups.length} group(s); took ${endTime - startTime} ms`
@@ -342,7 +368,7 @@ async function sendGroupsAsList(message, groups, servername) {
 		}
 	});
 
-	message.channel.send(serverGroupsEmbed);
+	return message.channel.send(serverGroupsEmbed);
 }
 
 async function postServerStatus(message) {
