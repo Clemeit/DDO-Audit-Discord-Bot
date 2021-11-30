@@ -8,7 +8,9 @@ Note: DDO Audit uses the `!` prefix.
 
 Try `!groups servername [level|level-range|leader_name]` (e.g. `!groups thelanis` or `!groups thelanis 15-19` or `!groups thelanis clemeit`)
 
-Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter. The response will be deleted automatically after 5 minutes. You may append "save" to the end of the message to stop the message from being deleted (e.g. `!groups thelanis save`).
+Result: A list of all public groups currently posted on the specified server and, if provided, matching the filter. Groups are updated every 15 seconds, but may take longer to update after a server restart.
+
+The response will be deleted automatically after 5 minutes. You may append "save" to the end of the message to stop the message from being deleted (e.g. `!groups thelanis save`).
 
 Notes on the filter parameter:
 
@@ -31,7 +33,7 @@ Note: Append "large" to the end of the command (e.g. `!view thelanis large`) to 
 
 Try `!serverstatus`
 
-Result: Online/Offline status for DDO's servers.
+Result: Online/Offline status for DDO's servers. Server status is updated every 60 seconds.
 
 ![Server Status](./img/ddo-audit-discord-serverstatus.png)
 
@@ -39,9 +41,15 @@ Result: Online/Offline status for DDO's servers.
 
 Try `!serverpop`
 
-Result: Current population for each of DDO's servers.
+Result: Current population for each of DDO's servers. Population data is updated every 5 minutes, but may take longer to update after a server restart.
 
 ![Server Population](./img/ddo-audit-discord-serverpop.png)
+
+## For Detailed Server Population Info
+
+Try `!serverpop servername`
+
+Result: Various population statistics including percentage of players in groups, guilds, and quests; average player level; and quarterly unique player and guild totals. 
 
 # Adding This Bot
 
