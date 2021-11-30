@@ -21,6 +21,18 @@ const SERVERS = [
 	"Hardcore",
 ];
 
+const SERVERS_LOWERCASE = [
+	"argonnessen",
+	"cannith",
+	"ghallanda",
+	"khyber",
+	"orien",
+	"sarlona",
+	"thelanis",
+	"wayfinder",
+	"hardcore",
+];
+
 client.on("ready", () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	client.user.setActivity("Dungeons & Dragons Online");
@@ -60,6 +72,7 @@ client.on("message", (message) => {
 });
 
 function fixServerName(input) {
+	if (input == null) return "";
 	switch (input.toLowerCase()) {
 		case "a":
 		case "argo":
@@ -164,7 +177,7 @@ async function postGroups(message, serverName) {
 	}
 
 	console.log(
-		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'groups' for '${servername} ("${serverName}")' at '${message.createdAt}'`
+		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested '${command}' for '${servername} ("${serverName}")' at '${message.createdAt}'`
 	);
 
 	if (servername === "") {
@@ -306,11 +319,25 @@ async function postGroups(message, serverName) {
 				}
 			});
 		} else if (command === "view") {
-			await Render.sendGroupsAsPanel(message, groups, large).then((msg) => {
-				if (!shouldSave) {
-					msg.delete({ timeout: 1000 * 60 * 5 });
-				}
-			});
+			await Render.sendGroupsAsPanel(message, groups, large)
+				.then((msg) => {
+					if (!shouldSave) {
+						msg.delete({ timeout: 1000 * 60 * 5 });
+					}
+				})
+				.catch((err) => {
+					if (err.code === 50013) {
+						message
+							.reply(
+								"I don't have permission to send images in this channel."
+							)
+							.then((msg) => {
+								if (!shouldSave) {
+									msg.delete({ timeout: 1000 * 60 * 5 });
+								}
+							});
+					}
+				});
 		}
 
 		await Verbose.followup(message, 2, shouldSave).then((msg) => {
@@ -458,135 +485,189 @@ async function postPopulation(message) {
 		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'population' at '${message.createdAt}'`
 	);
 	try {
-		const {
-			Argonnessen,
-			Cannith,
-			Ghallanda,
-			Khyber,
-			Orien,
-			Sarlona,
-			Thelanis,
-			Wayfinder,
-			Hardcore,
-		} = await fetch("https://www.playeraudit.com/api/playersoverview").then(
-			(response) => response.json()
-		);
-		const { Worlds } = await fetch(
-			"https://playeraudit.com/api/serverstatus"
-		).then((response) => response.json());
-		let defaultserver = "";
-		if (Worlds != null && Worlds.length > 0) {
-			Worlds.forEach((world) => {
-				if (world.Order === 0) {
-					defaultserver = world.Name;
+		const args = message.content.slice(prefix.length).trim().split(/ +/);
+		const command = args.shift();
+		const server = args.shift();
+		let filter = args.join(" ");
+
+		let servername = fixServerName(server);
+
+		if (server != null && servername === "") {
+			message.reply(`I don't recognize that server.`);
+			return;
+		} else if (servername === "") {
+			await postGamePopulation(message)
+				.then((msg) => {})
+				.catch((err) => {
+					console.log(` -> FAILED with error \n${error}`);
+					message.reply(
+						"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
+					);
+				});
+		} else {
+			const { Players, Population } = await fetch(
+				`https://playeraudit.com/api/players?s=${servername}`
+			)
+				.then((response) => response.json())
+				.catch((err) => {
+					console.log(` -> FAILED with error \n${error}`);
+					message.reply(
+						"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
+					);
+				});
+
+			const uniquecounts = await fetch(
+				`https://playeraudit.com/api/uniquedata`
+			)
+				.then((response) => response.json())
+				.catch((err) => {
+					console.log(` -> FAILED with error \n${error}`);
+					message.reply(
+						"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
+					);
+				});
+
+			let uniqueplayers = 0;
+			let uniqueguilds = 0;
+			uniquecounts.forEach((s) => {
+				if (s.ServerName.toLowerCase() === servername.toLowerCase()) {
+					uniqueplayers = s.UniquePlayers;
+					uniqueguilds = s.UniqueGuilds;
 				}
 			});
+
+			if (filter.trim() === "") {
+				let inparty = 0;
+				let inquest = 0;
+				let inguild = 0;
+				let avglevel = 0;
+
+				Players.forEach((player) => {
+					if (player.GroupId) inparty++;
+					if (!player.Location.IsPublicSpace) inquest++;
+					if (player.Guild !== "") inguild++;
+					avglevel += player.TotalLevel;
+				});
+				avglevel /= Population;
+
+				const serverStatusEmbed = new MessageEmbed()
+					.setColor("#00ff99")
+					.setTitle(
+						`${servername.charAt(0).toUpperCase() + servername.slice(1)}`
+					)
+					.setURL(`https://www.playeraudit.com/servers?s=${servername}`)
+					.setAuthor(
+						"DDO Audit",
+						"https://playeraudit.com/favicon-32x32.png",
+						"https://www.playeraudit.com/"
+					)
+					.setDescription(
+						`There are currently ${Population} players on ${
+							servername.charAt(0).toUpperCase() + servername.slice(1)
+						}.`
+					)
+					.setThumbnail("https://playeraudit.com/favicon-32x32.png")
+					.addFields(
+						{
+							name: "Players in groups",
+							value: `${Math.round(
+								(inparty / Population) * 100
+							)}% (${inparty}/${Population})`,
+							inline: false,
+						},
+						{
+							name: "Players in quests",
+							value: `${Math.round(
+								(inquest / Population) * 100
+							)}% (${inquest}/${Population})`,
+							inline: false,
+						},
+						{
+							name: "Players in guilds",
+							value: `${Math.round(
+								(inguild / Population) * 100
+							)}% (${inguild}/${Population})`,
+							inline: false,
+						},
+						{
+							name: "Average player level",
+							value: Math.round(avglevel * 10) / 10,
+							inline: false,
+						},
+						{
+							name: "Quarterly players",
+							value: `${uniqueplayers} unique players`,
+							inline: true,
+						},
+						{
+							name: "Quarterly guilds",
+							value: `${uniqueguilds} unique guilds`,
+							inline: true,
+						}
+					)
+					.setTimestamp()
+					.setFooter("Data provided by DDO Audit");
+
+				await message.channel.send(serverStatusEmbed);
+			} else {
+				let location = "";
+				let matchingplayers = 0;
+
+				Players.forEach((player) => {
+					if (
+						player != null &&
+						player.Location != null &&
+						player.Location.Name != null
+					) {
+						if (location === "") {
+							if (
+								player.Location.Name.toLowerCase().includes(
+									filter.toLowerCase()
+								)
+							) {
+								matchingplayers++;
+								location = player.Location.Name;
+							}
+						} else {
+							if (player.Location.Name === location) {
+								matchingplayers++;
+							}
+						}
+					}
+				});
+
+				const serverStatusEmbed = new MessageEmbed()
+					.setColor("#00ff99")
+					.setTitle(
+						`${servername.charAt(0).toUpperCase() + servername.slice(1)}`
+					)
+					.setURL(`https://www.playeraudit.com/servers?s=${servername}`)
+					.setAuthor(
+						"DDO Audit",
+						"https://playeraudit.com/favicon-32x32.png",
+						"https://www.playeraudit.com/"
+					)
+					.setDescription(
+						`There ${
+							matchingplayers === 1 ? "is" : "are"
+						} **${matchingplayers}** player${
+							matchingplayers === 1 ? "" : "s"
+						} on **${
+							servername.charAt(0).toUpperCase() + servername.slice(1)
+						}** in **'${location || filter}'**.`
+					)
+					.setThumbnail("https://playeraudit.com/favicon-32x32.png")
+					.setTimestamp()
+					.setFooter("Data provided by DDO Audit");
+
+				await message.channel.send(serverStatusEmbed);
+			}
 		}
-
-		let totalpopulation =
-			Argonnessen +
-			Cannith +
-			Ghallanda +
-			Khyber +
-			Orien +
-			Sarlona +
-			Thelanis +
-			Wayfinder +
-			Hardcore;
-
-		const serverStatusEmbed = new MessageEmbed()
-			.setColor("#00ff99")
-			.setTitle("Server Population")
-			.setURL("https://www.playeraudit.com/servers")
-			.setAuthor(
-				"DDO Audit",
-				"https://playeraudit.com/favicon-32x32.png",
-				"https://www.playeraudit.com/"
-			)
-			.setDescription(`There are ${totalpopulation} players online:`)
-			.setThumbnail("https://playeraudit.com/favicon-32x32.png")
-			.addFields(
-				{
-					name: `${
-						defaultserver === "Argonnessen" ? "⭐" : ""
-					} Argonnessen`,
-					value: Argonnessen,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Cannith" ? "⭐" : ""} Cannith`,
-					value: Cannith,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Ghallanda" ? "⭐" : ""} Ghallanda`,
-					value: Ghallanda,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Khyber" ? "⭐" : ""} Khyber`,
-					value: Khyber,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Orien" ? "⭐" : ""} Orien`,
-					value: Orien,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Sarlona" ? "⭐" : ""} Sarlona`,
-					value: Sarlona,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Thelanis" ? "⭐" : ""} Thelanis`,
-					value: Thelanis,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Wayfinder" ? "⭐" : ""} Wayfinder`,
-					value: Wayfinder,
-					inline: true,
-				},
-				{
-					name: `${defaultserver === "Hardcore" ? "⭐" : ""} Hardcore`,
-					value: Hardcore,
-					inline: true,
-				}
-			)
-			.setTimestamp()
-			.setFooter("Data provided by DDO Audit");
-
-		let servicemessage = "";
-		if (
-			!Argonnessen ||
-			!Cannith ||
-			!Ghallanda ||
-			!Khyber ||
-			!Orien ||
-			!Sarlona ||
-			!Thelanis ||
-			!Wayfinder
-		) {
-			// At least 1 server is down
-			servicemessage =
-				"*Population data takes at least 5 minutes to update after a restart*\n";
-		}
-
-		message.channel.send(
-			`${servicemessage}You can check server population trends on <https://www.playeraudit.com>`
-		);
-
-		message.channel.send(serverStatusEmbed);
-
-		message.channel.send("⭐ = default");
 
 		Verbose.followup(message, 0.5);
 		let endTime = performance.now();
 		console.log(
-			` -> Served ${totalpopulation} total population; took ${
-				endTime - startTime
-			} ms`
+			` -> Served total population; took ${endTime - startTime} ms`
 		);
 	} catch (error) {
 		console.log(` -> FAILED with error \n${error}`);
@@ -594,6 +675,126 @@ async function postPopulation(message) {
 			"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
 		);
 	}
+}
+
+async function postGamePopulation(message) {
+	const {
+		Argonnessen,
+		Cannith,
+		Ghallanda,
+		Khyber,
+		Orien,
+		Sarlona,
+		Thelanis,
+		Wayfinder,
+		Hardcore,
+	} = await fetch("https://www.playeraudit.com/api/playersoverview").then(
+		(response) => response.json()
+	);
+	const { Worlds } = await fetch(
+		"https://playeraudit.com/api/serverstatus"
+	).then((response) => response.json());
+	let defaultserver = "";
+	if (Worlds != null && Worlds.length > 0) {
+		Worlds.forEach((world) => {
+			if (world.Order === 0) {
+				defaultserver = world.Name;
+			}
+		});
+	}
+
+	let totalpopulation =
+		Argonnessen +
+		Cannith +
+		Ghallanda +
+		Khyber +
+		Orien +
+		Sarlona +
+		Thelanis +
+		Wayfinder +
+		Hardcore;
+
+	const serverStatusEmbed = new MessageEmbed()
+		.setColor("#00ff99")
+		.setTitle("Server Population")
+		.setURL("https://www.playeraudit.com/servers")
+		.setAuthor(
+			"DDO Audit",
+			"https://playeraudit.com/favicon-32x32.png",
+			"https://www.playeraudit.com/"
+		)
+		.setDescription(`There are ${totalpopulation} players online:`)
+		.setThumbnail("https://playeraudit.com/favicon-32x32.png")
+		.addFields(
+			{
+				name: `${defaultserver === "Argonnessen" ? "⭐" : ""} Argonnessen`,
+				value: Argonnessen,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Cannith" ? "⭐" : ""} Cannith`,
+				value: Cannith,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Ghallanda" ? "⭐" : ""} Ghallanda`,
+				value: Ghallanda,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Khyber" ? "⭐" : ""} Khyber`,
+				value: Khyber,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Orien" ? "⭐" : ""} Orien`,
+				value: Orien,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Sarlona" ? "⭐" : ""} Sarlona`,
+				value: Sarlona,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Thelanis" ? "⭐" : ""} Thelanis`,
+				value: Thelanis,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Wayfinder" ? "⭐" : ""} Wayfinder`,
+				value: Wayfinder,
+				inline: true,
+			},
+			{
+				name: `${defaultserver === "Hardcore" ? "⭐" : ""} Hardcore`,
+				value: Hardcore,
+				inline: true,
+			}
+		)
+		.setTimestamp()
+		.setFooter("Data provided by DDO Audit");
+
+	let servicemessage = "";
+	if (
+		!Argonnessen ||
+		!Cannith ||
+		!Ghallanda ||
+		!Khyber ||
+		!Orien ||
+		!Sarlona ||
+		!Thelanis ||
+		!Wayfinder
+	) {
+		// At least 1 server is down
+		servicemessage =
+			"*Population data takes at least 5 minutes to update after a restart*\n";
+	}
+
+	return message.channel.send(
+		`${servicemessage}You can check server population trends on <https://www.playeraudit.com>\n⭐ = default server`,
+		serverStatusEmbed
+	);
 }
 
 client.login(token);

@@ -7,7 +7,7 @@ async function sendGroupsAsPanel(message, groups, large) {
 	const panelWidth = 848;
 	const lfmHeight = 90;
 	const classCount = 15;
-	let fontModifier = large ? 3 : 0;
+	let fontModifier = large ? 5 : 0;
 
 	let canvas = Canvas.createCanvas(
 		panelWidth,
