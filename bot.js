@@ -349,6 +349,16 @@ async function postGroups(message, serverName) {
 		console.log(
 			` -> Served ${groups.length} group(s); took ${endTime - startTime} ms`
 		);
+
+		// Delete the user's command message
+		message
+			.delete()
+			.then(() => {
+				console.log(" -> Deleted user message");
+			})
+			.catch((err) => {
+				console.log(` -> Failed to delete a message: ${err}`);
+			});
 	} catch (error) {
 		console.log(` -> FAILED with error \n${error}`);
 		message.reply(
