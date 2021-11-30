@@ -1,6 +1,6 @@
 # Usage
 
-The DDO Audit Discord bot provides server status, server population, and groups/LFMs for Dungeons & Dragons Online by utilizing APIs from the website of the same name. [Click here](https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=83968&scope=bot) to add the bot to your server.
+The DDO Audit Discord bot provides server status, server population, and groups/LFMs for Dungeons & Dragons Online by utilizing APIs from the website of the same name. [Click here](https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=59392&scope=bot) to add the bot to your server.
 
 Note: DDO Audit uses the `!` prefix.
 
@@ -49,21 +49,22 @@ Result: Current population for each of DDO's servers. Population data is updated
 
 Try `!serverpop servername`
 
-Result: Various population statistics including percentage of players in groups, guilds, and quests; average player level; and quarterly unique player and guild totals. 
+Result: Various population statistics including percentage of players in groups, guilds, and quests; average player level; and quarterly unique player and guild totals.
 
 # Adding This Bot
 
 If you would like to add DDO Audit to a server on which you have the **Manage Server** permission, you may do so by clicking the following link:
 
-https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=83968&scope=bot
+https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=59392&scope=bot
 
 # Permissions
 
 DDO Audit requires the following permissions:
 
 -  Send Messages (allows DDO Audit to post messages to your server in response to commands)
+-  Manage Messages (allows DDO Audit to delete a user's `!groups` and `!view` messages after responding to them)
 -  Embed Links (allows DDO Audit to embed link previews in its messages)
--  Read Message History (allows DDO Audit to read messages posted to you server; required for recognizing `!` commands)
+-  Attach Files (allows DDO Audit to send pictures of the LFM panel when the user invokes the `!view` command)
 
 # About
 
