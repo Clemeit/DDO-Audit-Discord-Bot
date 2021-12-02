@@ -60,6 +60,7 @@ client.on("message", (message) => {
 			}
 			var serverName = args.shift().toLowerCase();
 			postGroups(message, serverName);
+			deleteUserMessage(message);
 			break;
 		case "serverpop":
 		case "population":
@@ -70,6 +71,18 @@ client.on("message", (message) => {
 			break;
 	}
 });
+
+function deleteUserMessage(message) {
+	// Delete the user's command message
+	message
+		.delete()
+		.then(() => {
+			console.log(" -> Deleted user message");
+		})
+		.catch((err) => {
+			console.log(` -> Failed to delete a message: ${err}`);
+		});
+}
 
 function fixServerName(input) {
 	if (input == null) return "";
@@ -277,7 +290,9 @@ async function postGroups(message, serverName) {
 				additionalmessage +
 				"." +
 				(serverdownmessage ? "\n*Message: " + serverdownmessage + "*" : "");
-			message.channel.send(msg);
+			message.channel.send(msg).then((msg) => {
+				msg.delete({ timeout: 1000 * 60 * 5 });
+			});
 
 			let endTime = performance.now();
 			console.log(
@@ -332,9 +347,7 @@ async function postGroups(message, serverName) {
 								"I don't have permission to send images in this channel."
 							)
 							.then((msg) => {
-								if (!shouldSave) {
-									msg.delete({ timeout: 1000 * 60 * 5 });
-								}
+								msg.delete({ timeout: 1000 * 60 * 5 });
 							});
 					}
 				});
@@ -349,21 +362,15 @@ async function postGroups(message, serverName) {
 		console.log(
 			` -> Served ${groups.length} group(s); took ${endTime - startTime} ms`
 		);
-
-		// Delete the user's command message
-		message
-			.delete()
-			.then(() => {
-				console.log(" -> Deleted user message");
-			})
-			.catch((err) => {
-				console.log(` -> Failed to delete a message: ${err}`);
-			});
 	} catch (error) {
 		console.log(` -> FAILED with error \n${error}`);
-		message.reply(
-			"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
-		);
+		message
+			.reply(
+				"We're having trouble looking that up right now. Please try again later.\n\nThis bot is still in development. If you'd like to report an issue, you may reply directly to this message or contact me at Clemeit#7994."
+			)
+			.then((msg) => {
+				msg.delete({ timeout: 1000 * 60 * 5 });
+			});
 	}
 }
 
@@ -447,20 +454,24 @@ async function postServerStatus(message) {
 				"https://www.playeraudit.com/"
 			)
 			.setThumbnail("https://playeraudit.com/favicon-32x32.png")
-			.addFields(
-				{
-					name: "✅ ONLINE",
-					value: onlineservers.join(", ") || "-",
-					inline: false,
-				},
-				{
-					name: "❌ OFFLINE",
-					value: offlineservers.join(", ") || "-",
-					inline: false,
-				}
-			)
 			.setTimestamp()
 			.setFooter("Data provided by DDO Audit");
+
+		if (onlineservers.length) {
+			serverStatusEmbed.addFields({
+				name: "✅ ONLINE",
+				value: onlineservers.join(", ") || "-",
+				inline: false,
+			});
+		}
+
+		if (offlineservers.length) {
+			serverStatusEmbed.addFields({
+				name: "❌ OFFLINE",
+				value: offlineservers.join(", ") || "-",
+				inline: false,
+			});
+		}
 
 		if (unknownservers.length) {
 			serverStatusEmbed.addFields({
