@@ -4,10 +4,13 @@ const lfmSprites = Canvas.loadImage("./img/lfm-sprite.jpg");
 
 async function sendGroupsAsPanel(message, groups, large) {
 	const lfmSprites = await Canvas.loadImage("./img/lfm-sprite.jpg");
+	const santaHatA = await Canvas.loadImage("./img/santa_hat_a.png");
+	const santaHatB = await Canvas.loadImage("./img/santa_hat_b.png");
 	const panelWidth = 848;
 	const lfmHeight = 90;
 	const classCount = 15;
 	let fontModifier = large ? 5 : 0;
+	let eventTheme = "winter"; // "night revels", "winter"
 
 	let canvas = Canvas.createCanvas(
 		panelWidth,
@@ -166,6 +169,13 @@ async function sendGroupsAsPanel(message, groups, large) {
 			18,
 			18
 		);
+		if (eventTheme == "winter") {
+			if (group.Leader.Gender == "Male") {
+				pen.drawImage(santaHatA, 28 - 7, 73 + lfmHeight * index + 3 - 15);
+			} else {
+				pen.drawImage(santaHatB, 28 - 5, 73 + lfmHeight * index + 3 - 15);
+			}
+		}
 
 		// Draw class array
 		if (!group.hasOwnProperty("AcceptedCount")) {

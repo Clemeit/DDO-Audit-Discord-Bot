@@ -2,7 +2,7 @@
 
 The DDO Audit Discord bot provides server status, server population, and groups/LFMs for Dungeons & Dragons Online by utilizing APIs from the website of the same name. [Click here](https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=59392&scope=bot) to add the bot to your server.
 
-Note: DDO Audit uses the `!` prefix.
+Note: DDO Audit uses the `!` prefix by default. You may change this using the `!auditprefix` command.
 
 ## For Groups
 
@@ -56,6 +56,12 @@ Result: Various population statistics including percentage of players in groups,
 If you would like to add DDO Audit to a server on which you have the **Manage Server** permission, you may do so by clicking the following link:
 
 https://discord.com/api/oauth2/authorize?client_id=771919729824497664&permissions=59392&scope=bot
+
+# Changing the Prefix
+
+You can change the prefix for your server using the following command: `!auditprefix newprefix`.
+
+Running this command requires that you have the "Manage Server" permission.
 
 # Permissions
 

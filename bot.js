@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const { MessageEmbed } = require("discord.js");
-const { prefix, token } = require("./config.json");
+const { defaultprefix, token } = require("./config.json");
+const fs = require("fs");
 const Verbose = require("./verbose");
 const Render = require("./render");
 const client = new Discord.Client();
@@ -41,7 +42,21 @@ client.on("ready", () => {
 client.on("message", (message) => {
 	Verbose.onError(message);
 	Verbose.handleUserReply(message);
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
+	if (message.author.bot) return; // Don't respond to bots
+
+	// Add the default prefix to this guild's data:
+	let prefixes = JSON.parse(fs.readFileSync("./prefixes.json"));
+	if (!prefixes[message.guild.id]) {
+		prefixes[message.guild.id] = {
+			prefix: defaultprefix,
+		};
+		fs.writeFile("./prefixes.json", JSON.stringify(prefixes), (err) => {
+			if (err) console.log(err);
+		});
+	}
+	let prefix = prefixes[message.guild.id].prefix; // Load prefix from file
+
+	if (!message.content.startsWith(prefix)) return; // Prefix doesn't match
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const command = args.shift().toLowerCase();
@@ -59,18 +74,61 @@ client.on("message", (message) => {
 				return;
 			}
 			var serverName = args.shift().toLowerCase();
-			postGroups(message, serverName);
+			postGroups(message, serverName, prefix);
 			deleteUserMessage(message);
 			break;
 		case "serverpop":
 		case "population":
-			postPopulation(message);
+			postPopulation(message, prefix);
 			break;
 		case "serverstatus":
 			postServerStatus(message);
 			break;
+		case "auditprefix":
+			changePrefix(message, prefix);
+			break;
 	}
 });
+
+function changePrefix(message, prefix) {
+	const args = message.content.slice(prefix.length).trim().split(/ +/);
+	const command = args.shift();
+	const newprefix = args.shift();
+
+	if (!message.member.hasPermission("MANAGE_GUILD")) {
+		message.reply(
+			`You need the 'MANAGE_GUILD' permission to run this command.`
+		);
+		return;
+	}
+
+	if (!newprefix) {
+		message.reply(
+			`You may enter a new prefix, e.g. \`${prefix}auditprefix ?\``
+		);
+		return;
+	}
+
+	let prefixes = JSON.parse(fs.readFileSync("./prefixes.json"));
+	if (!prefixes[message.guild.id]) {
+		prefixes[message.guild.id] = {
+			prefix: newprefix,
+		};
+	}
+	prefixes[message.guild.id] = {
+		prefix: newprefix,
+	};
+
+	fs.writeFile("./prefixes.json", JSON.stringify(prefixes), (err) => {
+		if (err) {
+			console.log(err);
+			message.reply(`Unable to set new prefix. Try again.`);
+			return;
+		}
+	});
+
+	message.reply(`You set the prefix to \`${newprefix}\``);
+}
 
 function deleteUserMessage(message) {
 	// Delete the user's command message
@@ -130,7 +188,7 @@ function fixServerName(input) {
 	return "";
 }
 
-async function postGroups(message, serverName) {
+async function postGroups(message, serverName, prefix) {
 	let startTime = performance.now();
 	let servername = fixServerName(serverName);
 
@@ -500,7 +558,7 @@ async function postServerStatus(message) {
 	}
 }
 
-async function postPopulation(message) {
+async function postPopulation(message, prefix) {
 	let startTime = performance.now();
 	console.log(
 		`'${message.guild} @ ${message.channel.name}': '${message.author.username}' requested 'population' at '${message.createdAt}'`
